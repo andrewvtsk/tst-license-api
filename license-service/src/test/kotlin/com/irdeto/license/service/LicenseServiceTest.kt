@@ -1,7 +1,7 @@
 package com.irdeto.license.service
 
-import com.irdeto.license.model.License
-import com.irdeto.license.repository.LicenseRepository
+import com.irdeto.license.domain.License
+import com.irdeto.license.domain.LicenseRepository
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
@@ -28,7 +28,7 @@ class LicenseServiceTest {
 
         every { licenseRepository.existsByUserIdAndContentId(userId, contentId) } returns true
 
-        val result = licenseService.isUserLicensed(userId, contentId)
+        val result = licenseService.isLicensed(userId, contentId)
 
         assertTrue(result)
     }
@@ -40,35 +40,36 @@ class LicenseServiceTest {
 
         every { licenseRepository.existsByUserIdAndContentId(userId, contentId) } returns false
 
-        val result = licenseService.isUserLicensed(userId, contentId)
+        val result = licenseService.isLicensed(userId, contentId)
 
         assertFalse(result)
     }
 
     @Test
-    fun `should create license when not exists`() {
+    fun `should create license`() {
         val userId = UUID.randomUUID()
         val contentId = "matrix"
+        val license = License(userId, contentId)
 
-        every { licenseRepository.existsByUserIdAndContentId(userId, contentId) } returns false
-        every { licenseRepository.save(any()) } answers { firstArg() }
+        every { licenseRepository.save(any()) } returns license
 
         val result = licenseService.createLicense(userId, contentId)
 
-        assertTrue(result)
+        assertEquals(license, result)
         verify(exactly = 1) { licenseRepository.save(any()) }
     }
 
     @Test
-    fun `should not create license when already exists`() {
-        val userId = UUID.randomUUID()
-        val contentId = "matrix"
+    fun `getAllLicenses should return licenses`() {
+        val licenses = listOf(
+            License(UUID.randomUUID(), "avatar"),
+            License(UUID.randomUUID(), "matrix")
+        )
 
-        every { licenseRepository.existsByUserIdAndContentId(userId, contentId) } returns true
+        every { licenseRepository.findAll() } returns licenses
 
-        val result = licenseService.createLicense(userId, contentId)
+        val result = licenseService.getAllLicenses()
 
-        assertFalse(result)
-        verify(exactly = 0) { licenseRepository.save(any()) }
+        assertEquals(licenses, result)
     }
 }

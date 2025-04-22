@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component
 import org.springframework.web.filter.OncePerRequestFilter
 import java.util.*
 
-
+@Component
 class JwtAuthenticationFilter(
     private val jwtTokenProvider: JwtTokenProvider,
     @Value("\${SYSTEM_TOKEN}") private val systemToken: String
@@ -24,21 +24,25 @@ class JwtAuthenticationFilter(
         filterChain: FilterChain
     ) {
         val header = request.getHeader("Authorization")
-        
-        if (header != null) {
+
+        if (!header.isNullOrBlank()) {
             when {
                 header.startsWith("Bearer ") -> {
-                    val token = header.substring(7)
+                    val token = header.removePrefix("Bearer ").trim()
                     if (jwtTokenProvider.validateToken(token)) {
                         val userId = jwtTokenProvider.getUserIdFromToken(token)
-                        val auth = UsernamePasswordAuthenticationToken(userId, null, emptyList())
+                        val auth = UsernamePasswordAuthenticationToken(
+                            userId,
+                            null,
+                            emptyList()
+                        )
                         auth.details = WebAuthenticationDetailsSource().buildDetails(request)
                         SecurityContextHolder.getContext().authentication = auth
                     }
                 }
 
                 header.startsWith("System ") -> {
-                    val token = header.substring(7)
+                    val token = header.removePrefix("System ").trim()
                     if (token == systemToken) {
                         val auth = UsernamePasswordAuthenticationToken(
                             "system",

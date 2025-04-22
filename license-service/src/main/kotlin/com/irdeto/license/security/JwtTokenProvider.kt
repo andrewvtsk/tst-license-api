@@ -1,32 +1,46 @@
 package com.irdeto.license.security
 
 import io.jsonwebtoken.Jwts
-import io.jsonwebtoken.SignatureAlgorithm
+import io.jsonwebtoken.Jwts.SIG.HS256
 import io.jsonwebtoken.security.Keys
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 import java.util.*
+import javax.crypto.SecretKey
 
 @Component
 class JwtTokenProvider(
-    @Value("\${security.jwt.secret}") private val jwtSecret: String
+    @Value("\${security.jwt.secret}") jwtSecret: String
 ) {
+    private val key: SecretKey = Keys.hmacShaKeyFor(jwtSecret.toByteArray())
+
     fun getUserIdFromToken(token: String): UUID {
-        val claims = Jwts.parserBuilder()
-            .setSigningKey(jwtSecret.toByteArray())
+        val claims = Jwts.parser()
+            .verifyWith(key)
             .build()
-            .parseClaimsJws(token)
-            .body
+            .parseSignedClaims(token)
+            .payload
 
         return UUID.fromString(claims.subject)
     }
 
     fun validateToken(token: String): Boolean {
         return try {
-            Jwts.parserBuilder()
-                .setSigningKey(jwtSecret.toByteArray())
+            val claims = Jwts.parser()
+                .verifyWith(key)
                 .build()
-                .parseClaimsJws(token)
+                .parseSignedClaims(token)
+                .payload
+
+            val now = Date()
+            claims.expiration?.let {
+                if (it.before(now)) return false
+            }
+
+            claims.issuedAt?.let {
+                if (it.after(now)) return false
+            }
+
             true
         } catch (ex: Exception) {
             false

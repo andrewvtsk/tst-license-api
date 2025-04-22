@@ -1,13 +1,13 @@
 package com.irdeto.license.testutils
 
 import org.springframework.security.test.context.support.WithSecurityContext
-import java.lang.annotation.Inherited
+import kotlin.annotation.AnnotationRetention.RUNTIME
+import kotlin.annotation.AnnotationTarget.FUNCTION
 
-@Target(AnnotationTarget.FUNCTION, AnnotationTarget.CLASS)
-@Retention(AnnotationRetention.RUNTIME)
-@Inherited
+@Target(FUNCTION)
+@Retention(RUNTIME)
 @WithSecurityContext(factory = WithMockUUIDPrincipalSecurityContextFactory::class)
 annotation class WithMockUUIDPrincipal(
-    val uuid: String = "123e4567-e89b-12d3-a456-426614174000",
-    val roles: Array<String> = ["USER"]
+    val uuid: String,
+    val roles: Array<String> = []
 )

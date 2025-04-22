@@ -9,7 +9,6 @@ import org.junit.jupiter.api.Test
 import org.springframework.mock.web.MockHttpServletRequest
 import org.springframework.mock.web.MockHttpServletResponse
 import org.springframework.security.core.context.SecurityContextHolder
-import org.springframework.security.web.authentication.WebAuthenticationDetailsSource
 import java.util.*
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
@@ -25,7 +24,7 @@ class JwtAuthenticationFilterTest {
 
     @BeforeEach
     fun setup() {
-        jwtTokenProvider = mockk()
+        jwtTokenProvider = mockk(relaxed = true)
         filter = JwtAuthenticationFilter(jwtTokenProvider, systemToken)
     }
 
@@ -48,8 +47,9 @@ class JwtAuthenticationFilterTest {
         filter.doFilter(request, response, chain)
 
         val auth = SecurityContextHolder.getContext().authentication
-        assertEquals(userId.toString(), auth.name)
+        assertEquals(userId, auth.principal)
         assertTrue(auth.isAuthenticated)
+        assertTrue(auth.authorities.isEmpty())
     }
 
     @Test
@@ -62,7 +62,7 @@ class JwtAuthenticationFilterTest {
         filter.doFilter(request, response, chain)
 
         val auth = SecurityContextHolder.getContext().authentication
-        assertEquals("system", auth.name)
+        assertEquals("system", auth.principal)
         assertTrue(auth.authorities.any { it.authority == "ROLE_SYSTEM" })
         assertTrue(auth.isAuthenticated)
     }

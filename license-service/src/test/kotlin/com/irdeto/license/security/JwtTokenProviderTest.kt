@@ -1,6 +1,6 @@
 package com.irdeto.license.security
 
-import com.irdeto.license.model.License
+import com.irdeto.license.testutils.JwtFactory
 import io.jsonwebtoken.JwtException
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
@@ -11,7 +11,7 @@ class JwtTokenProviderTest {
 
     private lateinit var jwtTokenProvider: JwtTokenProvider
 
-    private val secret = "test-secret-key-that-is-long-enough-1234567890"
+    private val secret = "thisisaverysecuresecretkeyforjwtmustbe32bytes!"
     private val expirationMs = 3600000L
 
     @BeforeEach
@@ -20,18 +20,29 @@ class JwtTokenProviderTest {
     }
 
     @Test
-    fun `should return false for invalid JWT`() {
-        val invalidToken = "not.a.valid.jwt"
+    fun `should generate and validate token`() {
+        val userId = UUID.randomUUID()
 
-        assertFalse(jwtTokenProvider.validateToken(invalidToken))
+        // вручную соберем валидный JWT
+        val token = JwtFactory.createToken(userId, secret, expirationMs)
+
+        val isValid = jwtTokenProvider.validateToken(token)
+        val extractedUserId = jwtTokenProvider.getUserIdFromToken(token)
+
+        assertTrue(isValid)
+        assertEquals(userId, extractedUserId)
     }
 
     @Test
-    fun `should throw exception for invalid token in getUserIdFromToken`() {
-        val invalidToken = "this.is.not.jwt"
+    fun `should return false for malformed token`() {
+        val result = jwtTokenProvider.validateToken("invalid.token.value")
+        assertFalse(result)
+    }
 
+    @Test
+    fun `should throw on getUserIdFromToken for invalid token`() {
         assertThrows(JwtException::class.java) {
-            jwtTokenProvider.getUserIdFromToken(invalidToken)
+            jwtTokenProvider.getUserIdFromToken("this.is.not.jwt")
         }
     }
 }

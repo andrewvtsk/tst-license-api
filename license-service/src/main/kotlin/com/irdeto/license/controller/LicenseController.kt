@@ -7,7 +7,6 @@ import org.springframework.security.core.Authentication
 import org.springframework.security.access.AccessDeniedException
 import org.springframework.web.bind.annotation.*
 import jakarta.validation.Valid
-
 import java.util.*
 
 @RestController
@@ -22,7 +21,7 @@ class LicenseController(
         authentication: Authentication
     ): ResponseEntity<Boolean> {
         val userId = authentication.principal as UUID
-        val entitled = licenseService.isUserLicensed(userId, contentId)
+        val entitled = licenseService.isLicensed(userId, contentId)
         return ResponseEntity.ok(entitled)
     }
 
@@ -35,12 +34,8 @@ class LicenseController(
             throw AccessDeniedException("Only system is allowed to create licenses")
         }
 
-        val created = licenseService.createLicense(request.userId, request.contentId)
-        return if (created) {
-            ResponseEntity.status(201).body("License created")
-        } else {
-            ResponseEntity.ok("License already exists")
-        }
+        // Всегда создаёт новую лицензию
+        licenseService.createLicense(request.userId, request.contentId)
+        return ResponseEntity.status(201).body("License created")
     }
-
 }

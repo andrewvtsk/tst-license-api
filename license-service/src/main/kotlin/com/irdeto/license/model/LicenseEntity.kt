@@ -4,17 +4,16 @@ import jakarta.persistence.*
 import java.util.*
 
 @Entity
-@Table(name = "licenses")
-data class License(
+@Table(name = "licenses", uniqueConstraints = [UniqueConstraint(columnNames = ["user_id", "content_id"])])
+data class LicenseEntity(
+
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: UUID = UUID.randomUUID(),
 
     @Column(name = "user_id", nullable = false)
     val userId: UUID,
 
     @Column(name = "content_id", nullable = false)
-    val contentId: String,
-
-    @Column(name = "issued_at", nullable = false)
-    val issuedAt: Date = Date()
+    val contentId: String
 )
