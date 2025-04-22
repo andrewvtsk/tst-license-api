@@ -39,7 +39,7 @@ class LicenseControllerTest {
         every { licenseService.isUserLicensed(userId, contentId) } returns true
 
         mockMvc.get("/license?contentId=$contentId") {
-            header("Authorization", "Bearer mocked-jwt") // для визуального эффекта
+            header("Authorization", "Bearer mocked-jwt")
         }.andExpect {
             status { isOk() }
             content { string("true") }

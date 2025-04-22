@@ -16,4 +16,4 @@ spring:
 security:
   jwt:
     secret: thisisaverysecuresecretkeyforjwtmustbe32bytes!
-    expiration: 3600000 # 1 час в миллисекундах
+    expiration: 3600000
