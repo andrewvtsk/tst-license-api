@@ -1,6 +1,6 @@
 package com.irdeto.auth.security
 
-import com.irdeto.auth.model.User
+import com.irdeto.auth.domain.User
 import io.jsonwebtoken.JwtException
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
@@ -23,7 +23,7 @@ class JwtTokenProviderTest {
     fun `generateToken should create valid JWT with correct claims`() {
         val userId = UUID.randomUUID()
         val email = "test@example.com"
-        val user = User(userId, email, "hashed-pass")
+        val user = User(userId, email, "hashed-pass", Date())
 
         val token = jwtTokenProvider.generateToken(user)
 

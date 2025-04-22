@@ -5,9 +5,9 @@ import java.util.*
 
 @Entity
 @Table(name = "users")
-data class User(
+data class UserEntity(
     @Id
-    val id: UUID = UUID.randomUUID(),
+    val id: UUID,
 
     @Column(nullable = false, unique = true)
     val email: String,
@@ -16,5 +16,5 @@ data class User(
     val password: String,
 
     @Column(name = "created_at", nullable = false)
-    val createdAt: Date = Date()
+    val createdAt: Date
 )

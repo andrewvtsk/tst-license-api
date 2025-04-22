@@ -1,7 +1,7 @@
 package com.irdeto.auth.service
 
-import com.irdeto.auth.model.User
-import com.irdeto.auth.repository.UserRepository
+import com.irdeto.auth.domain.User
+import com.irdeto.auth.domain.UserRepository
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import java.util.*
@@ -19,17 +19,20 @@ class AuthService(
 
         val encodedPassword = passwordEncoder.encode(rawPassword)
         val user = User(
+            id = UUID.randomUUID(),
             email = email,
-            password = encodedPassword
+            hashedPassword = encodedPassword,
+            createdAt = Date()
         )
+
         return userRepository.save(user)
     }
 
     fun authenticate(email: String, rawPassword: String): User {
         val user = userRepository.findByEmail(email)
-            .orElseThrow { IllegalArgumentException("Invalid email or password") }
+            ?: throw IllegalArgumentException("Invalid email or password")
 
-        if (!passwordEncoder.matches(rawPassword, user.password)) {
+        if (!passwordEncoder.matches(rawPassword, user.hashedPassword)) {
             throw IllegalArgumentException("Invalid email or password")
         }
 

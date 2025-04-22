@@ -1,10 +1,10 @@
 package com.irdeto.auth.repository
 
-import com.irdeto.auth.model.User
+import com.irdeto.auth.model.UserEntity
 import org.springframework.data.jpa.repository.JpaRepository
 import java.util.*
 
-interface UserRepository : JpaRepository<User, UUID> {
+interface JpaUserRepository : JpaRepository<UserEntity, UUID> {
+    fun findByEmail(email: String): UserEntity?
     fun existsByEmail(email: String): Boolean
-    fun findByEmail(email: String): Optional<User>
 }

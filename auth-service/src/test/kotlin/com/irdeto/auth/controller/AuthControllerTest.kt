@@ -2,7 +2,7 @@ package com.irdeto.auth.controller
 
 import com.irdeto.auth.controller.dto.LoginRequest
 import com.irdeto.auth.controller.dto.RegisterRequest
-import com.irdeto.auth.model.User
+import com.irdeto.auth.domain.User
 import com.irdeto.auth.security.JwtTokenProvider
 import com.irdeto.auth.service.AuthService
 import com.irdeto.auth.config.TestSecurityConfig
@@ -37,7 +37,7 @@ class AuthControllerTest {
     @Test
     fun `POST register should return 200 with user email`() {
         val request = RegisterRequest("user@example.com", "password")
-        val user = User(UUID.randomUUID(), request.email, "hashed")
+        val user = User(UUID.randomUUID(), request.email, "hashed", Date())
 
         every { authService.registerUser(request.email, request.password) } returns user
 
@@ -53,7 +53,7 @@ class AuthControllerTest {
     @Test
     fun `POST login should return token`() {
         val request = LoginRequest("user@example.com", "password")
-        val user = User(UUID.randomUUID(), request.email, "hashed")
+        val user = User(UUID.randomUUID(), request.email, "hashed", Date())
 
         every { authService.authenticate(request.email, request.password) } returns user
         every { jwtTokenProvider.generateToken(user) } returns "mocked-jwt-token"
