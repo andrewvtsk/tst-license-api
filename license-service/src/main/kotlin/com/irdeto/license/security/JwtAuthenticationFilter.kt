@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component
 import org.springframework.web.filter.OncePerRequestFilter
 import java.util.*
 
-@Component
+
 class JwtAuthenticationFilter(
     private val jwtTokenProvider: JwtTokenProvider,
     @Value("\${SYSTEM_TOKEN}") private val systemToken: String

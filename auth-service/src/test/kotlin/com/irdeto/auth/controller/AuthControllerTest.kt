@@ -1,12 +1,12 @@
 package com.irdeto.auth.controller
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.irdeto.auth.controller.dto.LoginRequest
 import com.irdeto.auth.controller.dto.RegisterRequest
 import com.irdeto.auth.model.User
 import com.irdeto.auth.security.JwtTokenProvider
 import com.irdeto.auth.service.AuthService
 import com.irdeto.auth.config.TestSecurityConfig
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.ninjasquad.springmockk.MockkBean
 import io.mockk.every
 import org.junit.jupiter.api.Test
