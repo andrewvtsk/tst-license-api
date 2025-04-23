@@ -35,15 +35,16 @@ class LicenseControllerTest {
     @MockkBean
     private lateinit var jwtTokenProvider: JwtTokenProvider
 
-
     @WithMockUUIDPrincipal(uuid = "123e4567-e89b-12d3-a456-426614174000")
     @Test
     fun `GET license should return true`() {
         val contentId = "avatar"
         val userId = UUID.fromString("123e4567-e89b-12d3-a456-426614174000")
 
+        // моки для фильтра
         every { jwtTokenProvider.validateToken("mocked-jwt") } returns true
         every { jwtTokenProvider.getUserIdFromToken("mocked-jwt") } returns userId
+
         every { licenseService.isLicensed(userId, contentId) } returns true
 
         mockMvc.get("/license?contentId=$contentId") {
@@ -52,15 +53,16 @@ class LicenseControllerTest {
             status { isOk() }
             content { string("true") }
         }
-}
+    }
 
     @WithMockUUIDPrincipal(uuid = "system", roles = ["SYSTEM"])
     @Test
     fun `POST license should return 201 Created for system token`() {
         val request = CreateLicenseRequest(UUID.randomUUID(), "avatar")
-        val license = License(request.userId, request.contentId)
+        // создаём доменный объект с id
+        val license = License(UUID.randomUUID(), request.userId, request.contentId)
 
-        every { licenseService.createLicense(any(), any()) } returns license
+        every { licenseService.createLicense(request.userId, request.contentId) } returns license
 
         mockMvc.post("/license") {
             contentType = MediaType.APPLICATION_JSON
@@ -77,8 +79,10 @@ class LicenseControllerTest {
     fun `POST license should return 403 for non-system user`() {
         val request = CreateLicenseRequest(UUID.randomUUID(), "avatar")
 
+        // моки для фильтра
         every { jwtTokenProvider.validateToken("not-a-system-token") } returns true
-        every { jwtTokenProvider.getUserIdFromToken("not-a-system-token") } returns UUID.fromString("123e4567-e89b-12d3-a456-426614174000")
+        every { jwtTokenProvider.getUserIdFromToken("not-a-system-token") } returns
+                UUID.fromString("123e4567-e89b-12d3-a456-426614174000")
 
         mockMvc.post("/license") {
             contentType = MediaType.APPLICATION_JSON

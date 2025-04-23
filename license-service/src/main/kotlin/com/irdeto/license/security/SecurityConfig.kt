@@ -11,7 +11,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @Configuration
 class SecurityConfig(
     private val jwtTokenProvider: JwtTokenProvider,
-    @Value("\${security.system-token}") private val systemToken: String
+    @Value("\${SECURITY_SYSTEM_TOKEN}") private val systemToken: String
 ) {
 
     @Bean

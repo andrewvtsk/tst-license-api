@@ -4,8 +4,8 @@ server:
 spring:
   datasource:
     url: jdbc:postgresql://license-db:5432/licensedb
-    username: license_user
-    password: secret
+    username: ${LICENSE_DATASOURCE_USERNAME}
+    password: ${LICENSE_DATASOURCE_PASSWORD}
 
   jpa:
     hibernate:
@@ -18,5 +18,6 @@ spring:
 
 security:
   jwt:
-    secret: thisisaverysecuresecretkeyforjwtmustbe32bytes!
+    secret: ${SECURITY_JWT_SECRET}
     expiration: 3600000
+  system-token: ${SECURITY_SYSTEM_TOKEN}

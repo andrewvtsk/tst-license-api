@@ -15,7 +15,7 @@ import java.util.*
 @Component
 class JwtAuthenticationFilter(
     private val jwtTokenProvider: JwtTokenProvider,
-    @Value("\${SYSTEM_TOKEN}") private val systemToken: String
+    @Value("\${SECURITY_SYSTEM_TOKEN}") private val systemToken: String
 ) : OncePerRequestFilter() {
 
     override fun doFilterInternal(

@@ -49,27 +49,31 @@ class LicenseServiceTest {
     fun `should create license`() {
         val userId = UUID.randomUUID()
         val contentId = "matrix"
-        val license = License(userId, contentId)
 
-        every { licenseRepository.save(any()) } returns license
+        // Когда repository.save получит любой License, вернёт его обратно
+        every { licenseRepository.save(any()) } answers { firstArg() as License }
 
         val result = licenseService.createLicense(userId, contentId)
 
-        assertEquals(license, result)
+        // При создании сервисом id не null
+        assertNotNull(result.id)
+        assertEquals(userId, result.userId)
+        assertEquals(contentId, result.contentId)
+
         verify(exactly = 1) { licenseRepository.save(any()) }
     }
 
     @Test
     fun `getAllLicenses should return licenses`() {
-        val licenses = listOf(
-            License(UUID.randomUUID(), "avatar"),
-            License(UUID.randomUUID(), "matrix")
-        )
+        val l1 = License(UUID.randomUUID(), UUID.randomUUID(), "avatar")
+        val l2 = License(UUID.randomUUID(), UUID.randomUUID(), "matrix")
+        val licenses = listOf(l1, l2)
 
         every { licenseRepository.findAll() } returns licenses
 
         val result = licenseService.getAllLicenses()
 
+        assertEquals(2, result.size)
         assertEquals(licenses, result)
     }
 }

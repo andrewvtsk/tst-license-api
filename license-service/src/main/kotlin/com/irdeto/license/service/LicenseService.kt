@@ -15,7 +15,12 @@ class LicenseService(
     }
 
     fun createLicense(userId: UUID, contentId: String): License {
-        val license = License(userId = userId, contentId = contentId)
+        val license = License(
+            id = UUID.randomUUID(),
+            userId = userId,
+            contentId = contentId
+        )
+
         return licenseRepository.save(license)
     }
 
