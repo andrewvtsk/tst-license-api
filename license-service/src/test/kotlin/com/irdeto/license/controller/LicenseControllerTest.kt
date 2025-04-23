@@ -41,7 +41,6 @@ class LicenseControllerTest {
         val contentId = "avatar"
         val userId = UUID.fromString("123e4567-e89b-12d3-a456-426614174000")
 
-        // моки для фильтра
         every { jwtTokenProvider.validateToken("mocked-jwt") } returns true
         every { jwtTokenProvider.getUserIdFromToken("mocked-jwt") } returns userId
 
@@ -59,7 +58,6 @@ class LicenseControllerTest {
     @Test
     fun `POST license should return 201 Created for system token`() {
         val request = CreateLicenseRequest(UUID.randomUUID(), "avatar")
-        // создаём доменный объект с id
         val license = License(UUID.randomUUID(), request.userId, request.contentId)
 
         every { licenseService.createLicense(request.userId, request.contentId) } returns license
@@ -79,7 +77,6 @@ class LicenseControllerTest {
     fun `POST license should return 403 for non-system user`() {
         val request = CreateLicenseRequest(UUID.randomUUID(), "avatar")
 
-        // моки для фильтра
         every { jwtTokenProvider.validateToken("not-a-system-token") } returns true
         every { jwtTokenProvider.getUserIdFromToken("not-a-system-token") } returns
                 UUID.fromString("123e4567-e89b-12d3-a456-426614174000")

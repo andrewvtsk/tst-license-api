@@ -50,12 +50,10 @@ class LicenseServiceTest {
         val userId = UUID.randomUUID()
         val contentId = "matrix"
 
-        // Когда repository.save получит любой License, вернёт его обратно
         every { licenseRepository.save(any()) } answers { firstArg() as License }
 
         val result = licenseService.createLicense(userId, contentId)
 
-        // При создании сервисом id не null
         assertNotNull(result.id)
         assertEquals(userId, result.userId)
         assertEquals(contentId, result.contentId)

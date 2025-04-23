@@ -22,8 +22,6 @@ class JwtTokenProviderTest {
     @Test
     fun `should generate and validate token`() {
         val userId = UUID.randomUUID()
-
-        // вручную соберем валидный JWT
         val token = JwtFactory.createToken(userId, secret, expirationMs)
 
         val isValid = jwtTokenProvider.validateToken(token)

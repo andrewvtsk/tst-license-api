@@ -34,7 +34,6 @@ class LicenseController(
             throw AccessDeniedException("Only system is allowed to create licenses")
         }
 
-        // Всегда создаёт новую лицензию
         licenseService.createLicense(request.userId, request.contentId)
         return ResponseEntity.status(201).body("License created")
     }
