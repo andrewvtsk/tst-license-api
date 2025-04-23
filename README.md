@@ -17,7 +17,7 @@ The services communicate via JWT and are containerized using Docker.
 - **Authentication**: JWT
 - **Persistence**: PostgreSQL (via Spring Data JPA)
 - **Build Tool**: Maven
-- **Testing**: JUnit 5, MockK, SpringMockK, @DataJpaTest
+- **Testing**: JUnit, MockK, SpringMockK, @DataJpaTest
 - **Containerization**: Docker, Docker Compose
 
 
@@ -78,7 +78,7 @@ Both services use separate PostgreSQL databases with Flyway for schema migration
 - Docker & Docker Compose
 - Java 17+
 
-### Run the full stack:
+### Run:
 
 ```bash
 docker-compose up --build
@@ -95,10 +95,34 @@ Services are accessible via:
 
 
 
-## Environment Variables
+## Running Tests
+
+You can run each service’s tests independently.
+
+### auth-service
+
+From the project root or inside the `auth-service` folder:
+
+```bash
+cd auth-service
+./mvnw test
+```
 
 ### license-service
-- `SYSTEM_TOKEN` – secret token used for license creation
+
+From the project root or inside the `license-service` folder:
+
+```bash
+cd license-service
+./mvnw test
+```
+
+
+
+### Environment Variables (`docker-compose.yml`)
+
+- **auth-service**: `SPRING_DATASOURCE_URL`, `SPRING_DATASOURCE_USERNAME`, `SPRING_DATASOURCE_PASSWORD`, `security.jwt.secret`, `security.jwt.expiration`
+- **license-service**: `SPRING_DATASOURCE_*`, `security.jwt.secret`, `SYSTEM_TOKEN`
 
 
 
