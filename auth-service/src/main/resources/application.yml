@@ -4,8 +4,8 @@ server:
 spring:
   datasource:
     url: jdbc:postgresql://auth-db:5432/authdb
-    username: auth_user
-    password: secret
+    username: ${AUTH_DATASOURCE_USERNAME}
+    password: ${AUTH_DATASOURCE_PASSWORD}
   jpa:
     hibernate:
       ddl-auto: validate
@@ -15,5 +15,5 @@ spring:
 
 security:
   jwt:
-    secret: thisisaverysecuresecretkeyforjwtmustbe32bytes!
+    secret: ${SECURITY_JWT_SECRET}
     expiration: 3600000
