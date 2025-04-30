@@ -4,7 +4,9 @@ import com.irdeto.license.service.LicenseService
 import com.irdeto.license.controller.dto.CreateLicenseRequest
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.Authentication
+import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.access.AccessDeniedException
+import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException
 import org.springframework.web.bind.annotation.*
 import jakarta.validation.Valid
 import java.util.*
@@ -16,25 +18,22 @@ class LicenseController(
 ) {
 
     @GetMapping
-    fun checkLicense(
-        @RequestParam contentId: String,
-        authentication: Authentication
-    ): ResponseEntity<Boolean> {
-        val userId = authentication.principal as UUID
-        val entitled = licenseService.isLicensed(userId, contentId)
-        return ResponseEntity.ok(entitled)
+    fun checkLicense(@RequestParam contentId: String): ResponseEntity<Boolean> {
+        val auth = SecurityContextHolder.getContext().authentication 
+            ?: throw AuthenticationCredentialsNotFoundException("Not authenticated")
+        val userId = auth.principal as UUID
+
+        return ResponseEntity.ok(licenseService.isLicensed(userId, contentId))
     }
 
     @PostMapping
-    fun addLicense(
-        @Valid @RequestBody request: CreateLicenseRequest,
-        authentication: Authentication
-    ): ResponseEntity<String> {
-        if (authentication.name != "system") {
-            throw AccessDeniedException("Only system is allowed to create licenses")
-        }
+    fun addLicense(@Valid @RequestBody request: CreateLicenseRequest): ResponseEntity<String> {
+        val auth = SecurityContextHolder.getContext().authentication
+            ?: throw AuthenticationCredentialsNotFoundException("Not authenticated")
 
+        if (auth.name != "system") throw AccessDeniedException("Only system is allowed")
         licenseService.createLicense(request.userId, request.contentId)
+
         return ResponseEntity.status(201).body("License created")
     }
 }

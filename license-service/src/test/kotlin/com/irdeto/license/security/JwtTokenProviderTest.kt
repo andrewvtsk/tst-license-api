@@ -23,19 +23,32 @@ class JwtTokenProviderTest {
     fun `should generate and validate token`() {
         val userId = UUID.randomUUID()
         val token = JwtFactory.createToken(userId, secret, expirationMs)
+        val result = jwtTokenProvider.validateToken(token)
+        assertTrue(result is TokenValidationResult.Valid, "Expected Valid but was $result")
 
-        val isValid = jwtTokenProvider.validateToken(token)
-        val extractedUserId = jwtTokenProvider.getUserIdFromToken(token)
+        val claims = (result as TokenValidationResult.Valid).claims
+        val extractedFromClaims = UUID.fromString(claims.subject)
+        assertEquals(userId, extractedFromClaims)
 
-        assertTrue(isValid)
-        assertEquals(userId, extractedUserId)
+        val extractedViaHelper = jwtTokenProvider.getUserIdFromToken(token)
+        assertEquals(userId, extractedViaHelper)
     }
+    
 
     @Test
-    fun `should return false for malformed token`() {
-        val result = jwtTokenProvider.validateToken("invalid.token.value")
-        assertFalse(result)
+    fun `should return Malformed for malformed token`() {
+        val token = "invalid.token.value"
+        val result = jwtTokenProvider.validateToken(token)
+        assertTrue(result is TokenValidationResult.Malformed, "Expected Malformed but got $result")
+
+        val reason = (result as TokenValidationResult.Malformed).reason
+        assertTrue(
+            reason.isNotBlank(),
+            "Expected non-empty reason, but was '$reason'"
+        )
     }
+
+
 
     @Test
     fun `should throw on getUserIdFromToken for invalid token`() {

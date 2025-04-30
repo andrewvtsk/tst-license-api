@@ -23,38 +23,45 @@ class JwtAuthenticationFilter(
         response: HttpServletResponse,
         filterChain: FilterChain
     ) {
-        val header = request.getHeader("Authorization")
-
-        if (!header.isNullOrBlank()) {
+        request.getHeader("Authorization")?.let { header ->
             when {
-                header.startsWith("Bearer ") -> {
-                    val token = header.removePrefix("Bearer ").trim()
-                    if (jwtTokenProvider.validateToken(token)) {
-                        val userId = jwtTokenProvider.getUserIdFromToken(token)
-                        val auth = UsernamePasswordAuthenticationToken(
-                            userId,
-                            null,
-                            emptyList()
-                        )
-                        auth.details = WebAuthenticationDetailsSource().buildDetails(request)
-                        SecurityContextHolder.getContext().authentication = auth
-                    }
-                }
-
-                header.startsWith("System ") -> {
-                    val token = header.removePrefix("System ").trim()
-                    if (token == systemToken) {
-                        val auth = UsernamePasswordAuthenticationToken(
-                            "system",
-                            null,
-                            listOf(SimpleGrantedAuthority("ROLE_SYSTEM"))
-                        )
-                        SecurityContextHolder.getContext().authentication = auth
-                    }
-                }
+                header.startsWith("Bearer ")    -> handleBearer(header.removePrefix("Bearer ").trim(), request)
+                header.startsWith("System ")    -> handleSystem(header.removePrefix("System ").trim())
+                else                            -> logger.debug("No recognizable Authorization header")
             }
         }
 
         filterChain.doFilter(request, response)
     }
+
+    private fun handleBearer(token: String, request: HttpServletRequest) {
+        when (val result = jwtTokenProvider.validateToken(token)) {
+            is TokenValidationResult.Valid              -> setAuthentication(UUID.fromString(result.claims.subject), request)
+            TokenValidationResult.Expired               -> logger.warn("JWT expired")
+            TokenValidationResult.NotYetValid           -> logger.warn("JWT not yet valid")
+            is TokenValidationResult.InvalidSignature   -> logger.warn("Invalid JWT signature: ${result.reason}")
+            is TokenValidationResult.Malformed          -> logger.warn("Malformed JWT: ${result.reason}")
+        }
+    }
+
+    private fun handleSystem(sysToken: String) {
+        if (sysToken != systemToken) {
+            logger.debug("Invalid system token")
+            return
+        }
+
+        val auth = UsernamePasswordAuthenticationToken(
+            "system", null, listOf(SimpleGrantedAuthority("ROLE_SYSTEM"))
+        )
+
+        SecurityContextHolder.getContext().authentication = auth
+    }
+
+    private fun setAuthentication(principal: UUID, request: HttpServletRequest) {
+        val auth = UsernamePasswordAuthenticationToken(principal, null, emptyList())
+
+        auth.details = WebAuthenticationDetailsSource().buildDetails(request)
+        SecurityContextHolder.getContext().authentication = auth
+    }
+
 }
