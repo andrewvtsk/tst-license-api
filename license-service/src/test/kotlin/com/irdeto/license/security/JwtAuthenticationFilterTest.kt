@@ -1,5 +1,6 @@
 package com.irdeto.license.security
 
+import io.jsonwebtoken.Claims
 import io.mockk.every
 import io.mockk.mockk
 import jakarta.servlet.FilterChain
@@ -36,12 +37,15 @@ class JwtAuthenticationFilterTest {
     @Test
     fun `should authenticate valid JWT token`() {
         val token = "valid.jwt.token"
+        val mockClaims = mockk<Claims> {
+            every { subject } returns userId.toString()
+        }
         val request = MockHttpServletRequest()
         request.addHeader("Authorization", "Bearer $token")
         val response = MockHttpServletResponse()
         val chain = mockk<FilterChain>(relaxed = true)
 
-        every { jwtTokenProvider.validateToken(token) } returns true
+        every { jwtTokenProvider.validateToken(token) }.returns(TokenValidationResult.Valid(mockClaims))
         every { jwtTokenProvider.getUserIdFromToken(token) } returns userId
 
         filter.doFilter(request, response, chain)
@@ -70,18 +74,19 @@ class JwtAuthenticationFilterTest {
     @Test
     fun `should skip authentication if token is invalid`() {
         val token = "invalid.jwt"
-        val request = MockHttpServletRequest()
-        request.addHeader("Authorization", "Bearer $token")
+        val request = MockHttpServletRequest().apply {
+            addHeader("Authorization", "Bearer $token")
+        }
         val response = MockHttpServletResponse()
         val chain = mockk<FilterChain>(relaxed = true)
-
-        every { jwtTokenProvider.validateToken(token) } returns false
+        every { jwtTokenProvider.validateToken(token) }.returns(TokenValidationResult.Malformed("cannot parse token"))
 
         filter.doFilter(request, response, chain)
 
         val auth = SecurityContextHolder.getContext().authentication
         assertNull(auth)
     }
+
 
     @Test
     fun `should skip authentication if no Authorization header`() {

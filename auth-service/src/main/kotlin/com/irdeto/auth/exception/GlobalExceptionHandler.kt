@@ -3,6 +3,7 @@ package com.irdeto.auth.exception
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.annotation.ControllerAdvice
 import org.springframework.web.bind.annotation.ExceptionHandler
 import java.time.LocalDateTime
@@ -18,6 +19,19 @@ class GlobalExceptionHandler {
         val error: String,
         val message: String?
     )
+
+    @ExceptionHandler(MethodArgumentNotValidException::class)
+    fun handleValidation(ex: MethodArgumentNotValidException): ResponseEntity<ApiErrorResponse> {
+        val errors = ex.bindingResult.fieldErrors
+            .joinToString("; ") { "${it.field}: ${it.defaultMessage}" }
+
+        val response = ApiErrorResponse(
+            status = HttpStatus.BAD_REQUEST.value(),
+            error = HttpStatus.BAD_REQUEST.reasonPhrase,
+            message = errors
+        )
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response)
+    }
 
     @ExceptionHandler(IllegalArgumentException::class)
     fun handleIllegalArgument(ex: IllegalArgumentException): ResponseEntity<ApiErrorResponse> {
